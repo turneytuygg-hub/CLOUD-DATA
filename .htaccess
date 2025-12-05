@@ -1,0 +1,55 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Force HTTPS in production
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Protect sensitive files
+<FilesMatch "\.(php|ini|log|sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "^(config|mpesa_token|mpesa_stkpush|mpesa_callback|transactions)\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Allow access to specific PHP files via API
+<Files "mpesa_token.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+<Files "mpesa_stkpush.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+<Files "transactions.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Set security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Disable directory browsing
+Options -Indexes
+
+# Custom error pages
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
+
+# CORS headers for API
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "POST, GET, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
